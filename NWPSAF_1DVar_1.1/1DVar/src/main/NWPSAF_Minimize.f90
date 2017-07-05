@@ -144,7 +144,10 @@ USE NWPSAFMod_Params, ONLY :  &
     FileUnit_AveragingKernel, &
     EnhancedDiagnostics,      &
     UsePCs,                   &
-    CalcRadiance
+    CalcRadiance,  &
+    !PM
+    retrieval_in_log
+    !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
      Num_RTlevels,            &  
@@ -286,9 +289,17 @@ IF (MwClwRetrieval .AND. Retrieve_qtotal) THEN
    !RT_Params % RTguess(humidity) is in Log(kg/kg), hence take exponential to get units in kg/kg
    ! clw is in units of kg/kg anyway
    ! add both in the same units to get wqtotal
+   
+   !PM
+   IF (retrieval_in_log) THEN
    wqtotal(1:Num_WetLevels) = &
         EXP(RT_Params % RTguess(Prof_LastQ- Num_WetLevels + 1:Prof_LastQ)) + &
         RT_Params % RTguess(Prof_LastCLW- Num_WetLevels + 1:Prof_LastCLW   )
+   ELSE
+   wqtotal(1:Num_WetLevels)=RT_Params % RTguess(Prof_LastQ- Num_WetLevels + 1:Prof_LastQ) + &
+        RT_Params % RTguess(Prof_LastCLW- Num_WetLevels + 1:Prof_LastCLW)
+   END IF
+    !PM
     CALL NWPSAF_Qtot_to_q_ql(wqtotal,      &
                              wt,           &
                              wpress,       &
