@@ -63,7 +63,10 @@ USE NWPSAFMod_Params, ONLY : &
     Humidity_Units,     & 
     Humidity_PPMV,      &   
     Humidity_MassMix,   & 
-    Humidity_RH    
+    Humidity_RH  , &
+    !PM
+    retrieval_in_log
+    !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
     RTParams_Type, &
@@ -220,9 +223,13 @@ END IF
 !  RT_Params % RTBack elements for humidity and ozone are changed accordingly.
 !
 !Initialize
-
-RT_Params % RTBack(Prof_FirstQ:Prof_LastQ) = LOG(min_q)
-
+!PM
+IF (retrieval_in_log) THEN
+    RT_Params % RTBack(Prof_FirstQ:Prof_LastQ) = LOG(min_q)
+ELSE
+RT_Params % RTBack(Prof_FirstQ:Prof_LastQ) = min_q
+ENDIF
+!PM
 Humidities: IF ( Valid_Data ) THEN
 
    !3.1) Convert surface humidity to Ln(q)
@@ -236,13 +243,31 @@ Humidities: IF ( Valid_Data ) THEN
    rhumidity = Background % rh2(obnumber)
    SELECT CASE (Humidity_Units)
      CASE (Humidity_PPMV)
+     !PM
+     IF (retrieval_in_log) THEN
+     !PM
         RT_Params % RTBack(Prof_q2) = &
              LOG(rhumidity / q_mixratio_to_ppmv)
+     ELSE
+        RT_Params % RTBack(Prof_q2) = &
+             rhumidity / q_mixratio_to_ppmv
+    ENDIF
+     !PM
      CASE(Humidity_MassMix)
+     IF (retrieval_in_log) THEN
         RT_Params % RTBack(Prof_q2) = LOG(rhumidity)
+     ELSE
+        RT_Params % RTBack(Prof_q2) = rhumidity
+     ENDIF
      CASE(Humidity_RH)
+     IF (retrieval_in_log) THEN
         RT_Params % RTBack(Prof_q2) = &
              LOG(qsaturated(Num_RTLevels+1) * rhumidity)
+    ELSE
+        RT_Params % RTBack(Prof_q2) = &
+             qsaturated(Num_RTLevels+1) * rhumidity
+    ENDIF
+    !PM
    END SELECT
           
    !3.2) Convert humidity from given units to Ln(q) 
@@ -264,13 +289,29 @@ Humidities: IF ( Valid_Data ) THEN
            rh(obnumber,level)
       SELECT CASE (Humidity_Units)
         CASE (Humidity_PPMV)
+        !PM
+        IF (retrieval_in_log) THEN
            RT_Params % RTBack(Prof_FirstQ+level-1) = &
                 LOG(rhumidity / q_mixratio_to_ppmv)
+        ELSE
+          RT_Params % RTBack(Prof_FirstQ+level-1) = &
+                rhumidity / q_mixratio_to_ppmv
+        ENDIF
         CASE(Humidity_MassMix)
+       IF (retrieval_in_log) THEN        
            RT_Params % RTBack(Prof_FirstQ+level-1) = LOG(rhumidity)
+       ELSE
+           RT_Params % RTBack(Prof_FirstQ+level-1) = rhumidity
+       ENDIF
         CASE(Humidity_RH)
+        IF (retrieval_in_log) THEN
            RT_Params % RTBack(Prof_FirstQ+level-1) = &
                 LOG(qsaturated(level) * rhumidity)
+        ELSE
+            RT_Params % RTBack(Prof_FirstQ+level-1) = &
+                qsaturated(level) * rhumidity
+        ENDIF
+        !PM
       END SELECT
    END DO
 
@@ -314,26 +355,50 @@ Check_humidities: IF ( Valid_Data ) THEN
    !Levels
    !------
    DO level = 1, Num_RTlevels
-
+!PM
       !Constrain to less than qsaturated
+     IF (retrieval_in_log) THEN 
       RT_Params % RTBack(level+Prof_FirstQ-1) = &
            MIN(RT_Params % RTBack(level+Prof_FirstQ-1), &
            LOG(qsaturated(level)))
-      
+      ELSE
+        RT_Params % RTBack(level+Prof_FirstQ-1) = &
+           MIN(RT_Params % RTBack(level+Prof_FirstQ-1), &
+           qsaturated(level))
+     ENDIF
       !Constrain to a minimum value
+      IF (retrieval_in_log) THEN
       RT_Params % RTBack(level+Prof_FirstQ-1) = &
            MAX( RT_Params % RTBack(level+Prof_FirstQ-1),LOG(min_q))
+      ELSE
+        RT_Params % RTBack(level+Prof_FirstQ-1) = &
+           MAX( RT_Params % RTBack(level+Prof_FirstQ-1),min_q)   
+      ENDIF
+!PM
       
    END DO
    
    !Surface
    !-------
    !Constrain to a maximum of 110% of qsaturated
+ !PM  
+   IF (retrieval_in_log) THEN
    RT_Params % RTBack(Prof_q2) = MIN(RT_Params % RTBack(Prof_q2), &
         LOG(1.1*qsaturated(Num_RTLevels+1)))
+   ELSE
+   RT_Params % RTBack(Prof_q2) = MIN(RT_Params % RTBack(Prof_q2), &
+        1.1*qsaturated(Num_RTLevels+1))   
+   ENDIF
+   !PM
    
    !Constrain to a minimum value
+!PM
+   IF (retrieval_in_log) THEN
    RT_Params % RTBack(Prof_q2) = MAX( RT_Params % RTBack(Prof_q2), LOG(Min_q) )
+   ELSE
+   RT_Params % RTBack(Prof_q2) = MAX(RT_Params % RTBack(Prof_q2), Min_q )
+   ENDIF
+!PM
    
    
 END IF Check_humidities
