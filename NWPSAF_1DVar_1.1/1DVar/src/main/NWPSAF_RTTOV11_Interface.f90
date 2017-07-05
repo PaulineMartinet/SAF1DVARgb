@@ -50,7 +50,10 @@ USE NWPSAFMod_Params, ONLY : &
      UsePCs,             &
      NPCScores,          &
      CalcRadiance,       &
-     Gas_Units
+     Gas_Units, &
+     !PM
+     retrieval_in_log
+     !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
      RTParams_Type,            &
@@ -274,7 +277,13 @@ ELSE RTTOV_FastmodelMode
 
   profiles(1)%p(:) = RT_Params%Pressure_Pa(:)/100.0
   profiles(1)%t(:) = RTProf(Prof_FirstT : Prof_LastT)
+  !PM
+  IF (retrieval_in_log) THEN
   profiles(1)%q(:) = EXP(RTProf(Prof_FirstQ:Prof_LastQ))*q_mixratio_to_ppmv
+  ELSE
+  profiles(1)%q(:) = RTProf(Prof_FirstQ:Prof_LastQ)*q_mixratio_to_ppmv
+  ENDIF
+  !PM
   IF ( ANY(RT_opts(:) % rt_ir % ozone_data) ) THEN
     profiles(1)%o3(:) = RTProf(Prof_FirstO3 : Prof_LastO3)
   END IF
@@ -286,7 +295,11 @@ ELSE RTTOV_FastmodelMode
   !----
 
   profiles(1)%s2m%t = RTProf(Prof_T2)
+  IF (retrieval_in_log) THEN    
   profiles(1)%s2m%q = EXP(RTProf(Prof_Q2)) * q_mixratio_to_ppmv
+  ELSE
+  profiles(1)%s2m%q = RTProf(Prof_Q2) * q_mixratio_to_ppmv
+  ENDIF
   profiles(1)%s2m%p = RTProf(Prof_PStar)
   profiles(1)%s2m%u = RTProf(Prof_UWind)
   profiles(1)%s2m%v = RTProf(Prof_VWind)
