@@ -44,7 +44,10 @@ USE NWPSAFMod_Params, ONLY : &
      Retrieve_LWP,       &
      MwClwRetrieval,     &
      UsePCs,             &
-     NPCScores
+     NPCScores, &
+     !PM
+     retrieval_in_log
+     !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
      RTParams_Type,         &
@@ -216,12 +219,20 @@ ELSE PCRetrievalSwitch
       RT_Params % RTguess(Prof_LastT - Num_WetLevels + 1:Prof_LastT)
     wpress(1:Num_WetLevels )= &
       RT_Params % Pressure_Pa(Prof_LastT - Num_WetLevels + 1:Prof_LastT)
+     IF (retrieval_in_log) THEN
     wqtotal(1:Num_WetLevels)= &
       EXP(RT_Params % RTguess( &
                         Prof_LastQ-Num_WetLevels + 1:Prof_LastQ)) + &
           RT_Params % RTguess( &
                         Prof_LastCLW- Num_WetLevels + 1:Prof_LastCLW)
-
+    ELSE
+    wqtotal(1:Num_WetLevels)= &
+      RT_Params % RTguess( &
+                        Prof_LastQ-Num_WetLevels + 1:Prof_LastQ) + &
+          RT_Params % RTguess( &
+                        Prof_LastCLW- Num_WetLevels + 1:Prof_LastCLW)    
+    ENDIF    
+ 
     ! Compute derivatives  q = dq/dqtotal and ql = dql/dqtotal
     QtotalOption=0
     CALL NWPSAF_Qtot_to_q_ql( wqtotal(1:Num_WetLevels),&
@@ -335,17 +346,33 @@ RT_Params % H_matrix_T(1:Num_ProfElementsUsed,First_Chan_Pos:Last_Chan_Pos) = &
 !-----------------------------------------------------------------
 IF (Ret_FirstQ > 0) THEN
   DO I = Ret_FirstQ, Ret_LastQ
-    IF (Retrieved_Elements(I) > 0) &
+    IF (Retrieved_Elements(I) > 0) THEN
+    !PM
+    IF (retrieval_in_log) THEN
       RT_Params % H_matrix_T(I,First_Chan_Pos:Last_Chan_Pos) = RT_Params % H_matrix_T(I,First_Chan_Pos:Last_Chan_Pos) * &
         profiles(1)%q(Retrieved_Elements(I)-Prof_FirstQ+1)
+    ELSE
+       RT_Params % H_matrix_T(I,First_Chan_Pos:Last_Chan_Pos) = RT_Params % H_matrix_T(I,First_Chan_Pos:Last_Chan_Pos) * &
+        H2O_MassMixToPPMV   
+    ENDIF
+    ENDIF
+    !PM
   END DO
 END IF
 
 ! This is the surface humidity Jacobian
 IF (Ret_q2 > 0) THEN
-  IF (Retrieved_Elements(Ret_q2) > 0) &
+  IF (Retrieved_Elements(Ret_q2) > 0) THEN
+  !PM
+  IF (retrieval_in_log) THEN
       RT_Params % H_matrix_T(Ret_q2,First_Chan_Pos:Last_Chan_Pos) = &
         RT_Params % H_matrix_T(Ret_q2,First_Chan_Pos:Last_Chan_Pos) * profiles(1)%s2m%q
+  ELSE
+    RT_Params % H_matrix_T(Ret_q2,First_Chan_Pos:Last_Chan_Pos) = &
+        RT_Params % H_matrix_T(Ret_q2,First_Chan_Pos:Last_Chan_Pos) * H2O_MassMixToPPMV 
+  ENDIF
+  ENDIF
+  !PM
 END IF
 RT_Params % H_matrix = TRANSPOSE(RT_Params % H_matrix_T)
 
