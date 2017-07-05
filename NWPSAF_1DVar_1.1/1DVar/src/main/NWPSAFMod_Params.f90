@@ -186,8 +186,11 @@ INTEGER, ALLOCATABLE, SAVE :: Retrieved_Elements(:)
 INTEGER, ALLOCATABLE, SAVE :: B_ElementsUsed(:) 
 REAL,SAVE :: WindspeedSD = 1.4 ! Standard deviation for wind speed retrieval 
                                ! (value for each component u,v)
-REAL,SAVE :: LwpSD = 0.2       ! Standard deviation for LWP retrieval; 
+!REAL,SAVE :: LwpSD = 0.2       ! Standard deviation for LWP retrieval; 
                                ! default 0.2
+!PM
+REAL, SAVE :: LwpSD
+!PM
 
 !----------------------
 ! 1.4.2. Humidity Units
@@ -196,6 +199,9 @@ INTEGER, PARAMETER :: Humidity_PPMV    = 1
 INTEGER, PARAMETER :: Humidity_MassMix = 2
 INTEGER, PARAMETER :: Humidity_RH      = 3
 INTEGER, SAVE :: Humidity_Units
+!PM
+LOGICAL, SAVE :: retrieval_in_log
+!PM
 
 !----------------------------------------
 ! 1.5. Auxiliary datasets
@@ -336,7 +342,11 @@ NAMELIST / Control / &
      UseRRs,                      &
      EnhancedDiagnostics,         &
      Gas_Units,                   &
-     Legacy_Setting
+     Legacy_Setting, &
+     !PM
+     LwpSD, &
+     retrieval_in_log
+     !PM
 
 
 END MODULE NWPSAFMod_Params
