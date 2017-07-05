@@ -73,7 +73,10 @@ USE NWPSAFMod_Params, ONLY : &
     Ret_UWind,                   &
     Ret_VWind,                   &
     UsePCs,                      &
-    CalcRadiance
+    CalcRadiance ,               &
+    !PM
+    retrieval_in_log
+    !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
     RTParams_Type,   &
@@ -139,9 +142,17 @@ SELECT CASE (Humidity_Units)
           Background % p(obnumber,1:Num_RTlevels),      & 
           Num_RTlevels ) 
      DO level = 1, Num_RTlevels
+     !PM
+     IF (retrieval_in_log) THEN
         IASIlevel_rh_out(level) = &
              EXP(RT_Params % RTguess(Prof_FirstQ+level-1)) / &
              qsaturated(level)
+     ELSE
+        IASIlevel_rh_out(level) = &
+             RT_Params % RTguess(Prof_FirstQ+level-1) / &
+             qsaturated(level)    
+     ENDIF
+    !PM
         IASIlevel_rh_out(level) = MIN( 1.0, IASIlevel_rh_out(level) )
      END DO
      Pstar(1) = RT_Params % RTguess(Prof_Pstar) * 100.
@@ -150,8 +161,15 @@ SELECT CASE (Humidity_Units)
           SurfaceT,                                   &
           Pstar(1),                                   &
           1 )
+    !PM
+    IF (retrieval_in_log) THEN      
      RT_Params % RTguess(Prof_q2) = &
           1.0 * EXP(RT_Params % RTguess(Prof_q2)) / qsaturated(1)
+    ELSE
+     RT_Params % RTguess(Prof_q2) = &
+          1.0 * RT_Params % RTguess(Prof_q2) / qsaturated(1)   
+    ENDIF
+    !PM
      RT_Params % RTguess(Prof_q2) = &
           MIN( 1.0, RT_Params % RTguess(Prof_q2) )
 
@@ -159,20 +177,44 @@ SELECT CASE (Humidity_Units)
 
      !Convert q to ppmv 
      DO level = 1, Num_RTlevels
-        IASIlevel_rh_out(level) = &
+     !PM
+        IF (retrieval_in_log) THEN  
+            IASIlevel_rh_out(level) = &
              EXP(RT_Params % RTguess(Prof_FirstQ+level-1)) * q_mixratio_to_ppmv
-     END DO
+        ELSE
+            IASIlevel_rh_out(level) = &
+             RT_Params % RTguess(Prof_FirstQ+level-1) * q_mixratio_to_ppmv   
+        ENDIF
+    END DO
+     
+     IF (retrieval_in_log) THEN 
      RT_Params % RTguess(Prof_q2) = &
           EXP(RT_Params % RTguess(Prof_q2)) * q_mixratio_to_ppmv
+     ELSE
+     RT_Params % RTguess(Prof_q2) = &
+          RT_Params % RTguess(Prof_q2) * q_mixratio_to_ppmv    
+     ENDIF
      Pstar(1) = RT_Params % RTguess(Prof_Pstar) * 100.0
+     !PM
   CASE (Humidity_MassMix)
      
      !Convert q to ppmv 
      DO level = 1, Num_RTlevels
+     !PM
+     IF (retrieval_in_log) THEN
         IASIlevel_rh_out(level) = &
              EXP(RT_Params % RTguess(Prof_FirstQ+level-1))
+     ELSE
+        IASIlevel_rh_out(level) = &
+             RT_Params % RTguess(Prof_FirstQ+level-1)
+     ENDIF
      END DO
-     RT_Params % RTguess(Prof_q2) = EXP(RT_Params % RTguess(Prof_q2)) 
+     IF (retrieval_in_log) THEN
+        RT_Params % RTguess(Prof_q2) = EXP(RT_Params % RTguess(Prof_q2))
+     ELSE
+        RT_Params % RTguess(Prof_q2) = RT_Params % RTguess(Prof_q2)
+     ENDIF
+     !PM
      Pstar(1) = RT_Params % RTguess(Prof_Pstar) * 100.0
 END SELECT
 
@@ -230,6 +272,8 @@ SELECT CASE (Humidity_Units)
           '     T (K)   q (ppmv)      Ozone'
      !xxx     DO Element=1,Num_RTLevels
      DO Element=Num_RTLevels,1,-1
+     !PM
+     IF (retrieval_in_log) THEN
         WRITE(FileUnit_Retrieved_Profiles,FMT='(F12.3,2(F10.3,E12.4,E12.4))') &
              Background % p(Obnumber,Element)/100.0,       &
              Obs % t(Element) % Value,                     & 
@@ -238,12 +282,25 @@ SELECT CASE (Humidity_Units)
              RT_Params % RTBack(Prof_FirstT+Element-1),    & 
              EXP(RT_Params % RTBack(Prof_FirstQ+Element-1))*q_mixratio_to_ppmv,&
              RT_Params % RTBack(Prof_FirstO3+Element-1)
+     ELSE
+       WRITE(FileUnit_Retrieved_Profiles,FMT='(F12.3,2(F10.3,E12.4,E12.4))') &
+             Background % p(Obnumber,Element)/100.0,       &
+             Obs % t(Element) % Value,                     & 
+             Obs % rh(Element) % Value,                    &
+             Obs % ozone(Element) % Value,                 &
+             RT_Params % RTBack(Prof_FirstT+Element-1),    & 
+             RT_Params % RTBack(Prof_FirstQ+Element-1)*q_mixratio_to_ppmv,&
+             RT_Params % RTBack(Prof_FirstO3+Element-1)     
+     ENDIF
+     !PM
      END DO
   CASE(Humidity_MassMix)
      WRITE(FileUnit_Retrieved_Profiles, *) &
           ' Pressure (hPa) T (K)    q (kg/kg)    Ozone   '// &
           '     T (K)   q (kg/kg)     Ozone'
      DO Element=1,Num_RTLevels
+     !PM
+        IF (retrieval_in_log) THEN
         WRITE(FileUnit_Retrieved_Profiles,FMT='(F12.3,2(F10.3,E12.4,E12.4))') &
              Background % p(Obnumber,Element)/100.0,                    &
              Obs % t(Element) % Value,                                  & 
@@ -252,6 +309,17 @@ SELECT CASE (Humidity_Units)
              RT_Params % RTBack(Prof_FirstT+Element-1),                 & 
              EXP(RT_Params % RTBack(Prof_FirstQ+Element-1)),            &
              RT_Params % RTBack(Prof_FirstO3+Element-1)
+        ELSE
+        WRITE(FileUnit_Retrieved_Profiles,FMT='(F12.3,2(F10.3,E12.4,E12.4))') &
+             Background % p(Obnumber,Element)/100.0,                    &
+             Obs % t(Element) % Value,                                  & 
+             Obs % rh(Element) % Value,                                 &
+             Obs % ozone(Element) % Value,                              &
+             RT_Params % RTBack(Prof_FirstT+Element-1),                 & 
+             RT_Params % RTBack(Prof_FirstQ+Element-1),            &
+             RT_Params % RTBack(Prof_FirstO3+Element-1)       
+        ENDIF
+        !PM
      END DO
 END SELECT
   
@@ -266,15 +334,34 @@ CASE(Humidity_RH)
         Obs% rh2% Value, &
         Background% rh2(obnumber)
 CASE(Humidity_PPMV)
+!PM
+IF (retrieval_in_log) THEN
    WRITE(FileUnit_Retrieved_Profiles, &
         FMT='(''Surface Humidity (ppmv):      '', 2F10.3)') &
         Obs% rh2% Value,                                    &
         EXP(RT_Params % RTBack(Prof_q2))* q_mixratio_to_ppmv
+ELSE
+   WRITE(FileUnit_Retrieved_Profiles, &
+        FMT='(''Surface Humidity (ppmv):      '', 2F10.3)') &
+        Obs% rh2% Value,                                    &
+        RT_Params % RTBack(Prof_q2)* q_mixratio_to_ppmv
+ENDIF
+!PM
+
 CASE(Humidity_MassMix)
+!PM
+IF (retrieval_in_log) THEN
    WRITE(FileUnit_Retrieved_Profiles, &
         FMT='(''Surface Humidity (kg/kg):     '', 2F10.3)') &
         Obs% rh2% Value,                          &
         EXP(RT_Params % RTBack(Prof_q2))
+ELSE
+   WRITE(FileUnit_Retrieved_Profiles, &
+        FMT='(''Surface Humidity (kg/kg):     '', 2F10.3)') &
+        Obs% rh2% Value,                          &
+        RT_Params % RTBack(Prof_q2)
+ENDIF
+!PM
 END SELECT
 
 IF (MwClwRetrieval .AND. Retrieve_LWP) THEN
