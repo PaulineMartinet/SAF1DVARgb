@@ -493,12 +493,12 @@ ELSE RTTOV_FastmodelMode
     !--------------------------------------------------------------------------
 
     ForwardOrGradient: SELECT CASE ( Fastmodel_Mode )
-
+    
     !4.1) RTTOV Direct call
     !----
     CASE( FastmodelMode_Forward ) ForwardOrGradient
 
-      !CALL rttov_print_profile(profiles(1), lu=6)
+       CALL rttov_print_profile(profiles(1), lu=6)
       !CALL rttov_print_opts(RT_opts(Instrument), lu=6)
       !CALL rttov_print_info(RT_Coefs(Instrument), lu=6)
 

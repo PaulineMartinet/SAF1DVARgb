@@ -386,6 +386,14 @@ DescentLoop : DO WHILE ( JCost > JOld .AND. &
     RT_Params%RTguess(Prof_FirstCLW:Prof_LastCLW) = &
       LWP_to_Layers( RT_Params % RTguess(Prof_LWP), cloud_structure )
   END IF
+  
+  !PM
+ CALL NWPSAF_CheckIteration( &
+    RT_Params % RTGuess,      & ! inout
+    New_Delta_Profile,        & ! inout
+    Profile_Variables_Reset,  & ! out
+    Out_of_Range )   
+  !PM
 
   CALL NWPSAF_Fastmodel_Interface(     &
     Fastmodel_Mode,          & ! in

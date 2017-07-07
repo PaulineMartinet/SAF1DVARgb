@@ -80,7 +80,9 @@ REAL, PARAMETER :: &
   MinSurfaceP         =    300.0,    &  ! ( hPa )
   Min_q               =      1.0E-8, &  ! ( kg / kg )
   MaxTemperature      =    340.0,    &  ! ( K ) 
-  MinTemperature      =     90.0,    &  ! ( K )
+  !PM
+  MinTemperature      =     3.0,    &  ! ( K )
+  !PM
   MaxRadiance         =    150.0,    &  ! (RTTOV radiance units mW sr-1 m-2 cm)
   MinRadiance         =      0.0,    & 
   Upper_Transition    =     10.0,    &  ! Define transition region for

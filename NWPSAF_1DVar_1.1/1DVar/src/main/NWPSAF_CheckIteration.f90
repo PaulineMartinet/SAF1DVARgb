@@ -54,7 +54,8 @@ Subroutine NWPSAF_CheckIteration( &
 
 USE NWPSAFMod_Constants, ONLY : &
     MaxTemperature, &
-    MinTemperature
+    MinTemperature, &
+    Min_Q
 
 USE NWPSAFMod_RTmodel, ONLY : &
     ProfSize, &
@@ -68,7 +69,11 @@ USE NWPSAFMod_RTmodel, ONLY : &
     Prof_Pstar, &
     Prof_CTP, &
     Prof_CloudCover, &
-    UseModelLevels
+    UseModelLevels, &
+    !PM
+    Prof_FirstQ, &
+    Prof_FirstCLW
+    !PM
 
 USE NWPSAFMod_Params, ONLY : &
     GeneralMode,        &
@@ -136,6 +141,37 @@ IF ( Guess_Prof(Prof_T2)  > MaxTemperature  .OR. &
       WRITE(*,*) 'INVALID DATA: Temperature outside limits at the surface'
    END IF
 END IF
+
+!PM
+!ADD A NEW CONSISTENCY CHECK ON HUMIDITY
+DO level = 1,Num_RTlevels
+   IF ( (Guess_Prof(Prof_FirstQ+level-1) < Min_Q) ) THEN
+      Out_of_range = .TRUE.
+      Guess_Prof(Prof_FirstQ+level-1)= Min_Q
+      IF ( GeneralMode >= VerboseMode ) THEN
+         WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level
+      ELSE
+         EXIT
+      END IF
+   END IF
+END DO
+!PM
+
+!PM
+!Check cloud liquid water profile within limits, else fail
+DO level = 1,Num_RTlevels
+   IF ( Guess_Prof(Prof_FirstCLW+level-1) < 0      ) THEN
+      !Out_of_range = .TRUE.
+      Guess_Prof(Prof_FirstCLW+level-1) = 1e-8
+      IF ( GeneralMode >= VerboseMode ) THEN
+         WRITE(*,*) 'INVALID DATA: CLW outside limits at level ',level,Guess_Prof(Prof_FirstCLW+level-1)
+      ELSE
+         EXIT
+      END IF
+   END IF
+END DO
+!PM
+
 
 
 ! ----------------------------------------------------

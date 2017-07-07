@@ -132,7 +132,10 @@ ReadAllB : DO type = 1, BmatrixTypes  ! currently type 1=sea,2=land
   READ (UNIT=file_unit,FMT=*, IOSTAT=ReadStatus) Num_elements
   ALLOCATE( Bfromfile(Num_Elements,Num_Elements) )
   ReadData : DO i = 1, Num_elements
-    READ (UNIT=file_unit, FMT='(5E16.8)', IOSTAT=ReadStatus ) & 
+    !READ (UNIT=file_unit, FMT='(5E16.8)', IOSTAT=ReadStatus ) & 
+    !PM
+    READ (UNIT=file_unit, FMT=*, IOSTAT=ReadStatus ) &
+    !PM
       (Bfromfile(j,i), j = 1,Num_elements)
     IF (ReadStatus /= 0) THEN
       Errormessage(1) = 'B matrix I/O error reading in data'

@@ -602,6 +602,14 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
     RT_Params%RTguess(Prof_FirstCLW:Prof_LastCLW) = &
       LWP_to_Layers( RT_Params % RTguess(Prof_LWP), cloud_structure )
   END IF
+  
+!PM New check to avoid negative liquid water content values
+  CALL NWPSAF_CheckIteration( &
+      RT_Params % RTGuess,      & ! inout
+      Delta_Profile,            & ! inout
+      Profile_Variables_Reset,  & ! out
+      Out_of_Range )              ! out
+!PM
 
   Fastmodel_Mode = FastmodelMode_Gradient
   WhichProf = GuessProf
