@@ -788,6 +788,12 @@ END IF
 
 Obs% NIter = Iterate
 
+!PM
+IF (.NOT. Converged) THEN
+	Obs% NIter = MaxIterations+1
+ENDIF
+!PM
+
 !-----------------------------------------
 !4. Interpolate increments to model levels (currently not used)
 !-----------------------------------------
