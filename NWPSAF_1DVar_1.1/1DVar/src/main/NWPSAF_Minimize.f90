@@ -146,7 +146,8 @@ USE NWPSAFMod_Params, ONLY :  &
     UsePCs,                   &
     CalcRadiance,  &
     !PM
-    retrieval_in_log
+    retrieval_in_log,         &
+    Read_CLW_Background
     !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
@@ -326,7 +327,14 @@ IF (MwClwRetrieval .AND. Retrieve_LWP ) THEN
     Layers_to_LWP(RT_Params % RTguess(Prof_FirstCLW:Prof_LastCLW), &
                   RT_Params % Pressure_Pa(:)                       )
   RT_Params % RTBack(Prof_LWP) = LWP_back
+  !PM
+  IF (Read_CLW_Background) THEN 
+       LWP_FirstGuess = LWP_back! RT_Params % RTguess(Prof_ClW) !=0.1 ! kg/m**2i
+  ELSE
+       LWP_FirstGuess = 0.1! RT_Params % RTguess(Prof_ClW) !=0.1 ! kg/m**2
+  ENDIF
   LWP_FirstGuess = 0.1! ! kg/m**2
+  !PM
   RT_Params % RTguess(Prof_LWP) = LWP_FirstGuess
   RT_Params % RT1stguess(Prof_LWP) = LWP_FirstGuess
   !Spread LWP to layers
