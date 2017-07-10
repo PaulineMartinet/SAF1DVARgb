@@ -350,6 +350,9 @@ ELSE RTTOV_FastmodelMode
   !----------------------------------------------------------------------------
   Instrument_Loop : DO Instrument = First_Instr, Last_Instr
 
+    !PM
+    Profiles(1)%zenangle = RT_Params % view_angle(Instrument)
+    !PM
     !2.1) Initialise arrays which need to be sized depending on input
     !----
     IF ( UsePCs ) THEN
@@ -498,7 +501,7 @@ ELSE RTTOV_FastmodelMode
     !----
     CASE( FastmodelMode_Forward ) ForwardOrGradient
 
-       CALL rttov_print_profile(profiles(1), lu=6)
+      ! CALL rttov_print_profile(profiles(1), lu=6)
       !CALL rttov_print_opts(RT_opts(Instrument), lu=6)
       !CALL rttov_print_info(RT_Coefs(Instrument), lu=6)
 

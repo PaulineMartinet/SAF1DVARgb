@@ -216,7 +216,7 @@ IF (FirstCall) THEN
       ErrorMessage,           & ! in
       ErrorStatus=StatusFatal ) ! in 
   END IF
-
+  
   ! ALLOCATE the arrays to store the files containing RT coefficients,
   ! and sub-instrument specifications.
 
@@ -226,6 +226,10 @@ IF (FirstCall) THEN
   ALLOCATE(RT_Params % SeriesChoice(RT_Params % Num_Instruments)) 
   ALLOCATE(RT_Params % PlatformChoice(RT_Params % Num_Instruments))
   ALLOCATE(RT_Params % SubTypeChoice(RT_Params % Num_Instruments))
+  
+  !PM
+  ALLOCATE(RT_Params % view_angle(RT_Params % Num_Instruments))
+  !PM
 
   ! Three more header lines
   
@@ -324,8 +328,11 @@ IF (FirstCall) THEN
           RT_Params % SubTypeChoice(I),  &
           First_Channel,                 &
           Last_Channel,                  &
-          WMO
-
+          WMO,                           &                                                      
+          !PM
+          RT_Params % view_angle(I)
+          !PM
+          
     IF (ReadStatus /= 0 .OR. RT_Params % SeriesChoice(I) < 0 .OR. &
         RT_Params % PlatformChoice(I) < 0 .OR. &
         RT_Params % SubTypeChoice(I) < 0 .OR. &
@@ -589,7 +596,6 @@ ReadData: DO WHILE (NumObRead < ObNumber)
   END IF
 
 END DO ReadData
-
 ! 
 !  If the last observation has been read in, close the file. 
 !

@@ -186,6 +186,9 @@ TYPE RTParams_Type
    INTEGER, POINTER :: SubTypeChoice(:)      
    INTEGER, POINTER :: NumChans(:)      
    INTEGER, POINTER :: RTCoeffs(:)
+   !PM
+   REAL, POINTER :: view_angle(:)
+   !PM
    
    ! In the observation vector, which channel belongs to which instrument?
    INTEGER :: Num_Instruments

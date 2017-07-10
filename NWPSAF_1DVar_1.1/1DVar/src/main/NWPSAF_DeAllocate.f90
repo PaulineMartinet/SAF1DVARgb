@@ -82,6 +82,9 @@ DEALLOCATE(RT_Params % Instrument_Number)
 DEALLOCATE(RT_Params % Absolute_Channel_Number)
 DEALLOCATE(RT_Params % First_Channel_for_Instrument)
 DEALLOCATE(RT_Params % RTEmissivity)
+!PM
+DEALLOCATE(RT_Params % view_angle)
+!PM
 
 DEALLOCATE(RT_Params % SatID)
 NULLIFY(RT_Params % Pressure_Pa)
