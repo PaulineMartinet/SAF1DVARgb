@@ -240,6 +240,9 @@ INTEGER :: WhichProf
 CHARACTER(LEN=*), PARAMETER :: RoutineName = "NWPSAF_Minimize"
 CHARACTER(LEN=80)  :: ErrorMessage(2)
 
+  character(len=20) ::FMT_out
+
+
 
 !-----------------------------------------------------------------------------
 
@@ -477,6 +480,10 @@ ELSE
   Old_Gamma = 1.
 END IF
 
+!PM
+write (FMT_out, "(A2,I3,A7)") "(",Num_ProfElementsUsed,"E12.4)"
+!PM
+
 Iteration_Loop: DO Iterate = 1, MaxIterations
 
   IF ( GeneralMode >= VerboseMode ) WRITE(*,*) 'ITER=',Iterate
@@ -550,7 +557,7 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
       WRITE(FileUnit_AMatrix,*) 'Analysis Error Covariance:'
       WRITE(FileUnit_AMatrix,*) 'Calculated from the Background for Observation 1'
       WRITE(FileUnit_AMatrix,*) 'Number of Elements = ',Num_ProfElementsUsed
-      WRITE(FileUnit_AMatrix,*) Analysis_Error_Covariance
+      WRITE(FileUnit_AMatrix,FMT_out) Analysis_Error_Covariance
       WRITE(FileUnit_AMatrix,*) 
       WRITE(FileUnit_AMatrix,*) '------------------------------'
       WRITE(FileUnit_AMatrix,*) '------------------------------'
@@ -746,7 +753,7 @@ IF (GeneralMode >= DebugMode .and. EnhancedDiagnostics) THEN
     WRITE(FileUnit_AMatrix,*) 'Analysis Error Covariance:'
     WRITE(FileUnit_AMatrix,*) 'Observation Number = ',obnumber
     WRITE(FileUnit_AMatrix,*) 'Number of Elements = ',Num_ProfElementsUsed
-    WRITE(FileUnit_AMatrix,*) Analysis_Error_Covariance
+    WRITE(FileUnit_AMatrix,FMT_out) Analysis_Error_Covariance
     WRITE(FileUnit_AMatrix,*) 
     WRITE(FileUnit_AMatrix,*) '------------------------------'
     WRITE(FileUnit_AMatrix,*) '------------------------------'
@@ -761,12 +768,12 @@ IF (GeneralMode >= DebugMode .and. EnhancedDiagnostics) THEN
     WRITE(FileUnit_AveragingKernel,*) '------------------------------'
     WRITE(FileUnit_AveragingKernel,*) 'ObNumber =',obnumber
     WRITE(FileUnit_AveragingKernel,*) 'Retrieval averaging kernel:'
-    WRITE(FileUnit_AveragingKernel,'(10E12.4)') AveragingKernel
+    WRITE(FileUnit_AveragingKernel,FMT_out) AveragingKernel
     WRITE(FileUnit_AveragingKernel,*) '------------------------------'
     WRITE(FileUnit_RetJacobian,*) '------------------------------'
     WRITE(FileUnit_RetJacobian,*) 'ObNumber =',obnumber
     WRITE(FileUnit_RetJacobian,*) 'Retrieval Jacobian:'
-    WRITE(FileUnit_RetJacobian,'(10E12.4)') RT_Params % H_matrix
+    WRITE(FileUnit_RetJacobian,FMT_out) RT_Params % H_matrix
   END IF
 END IF
 
