@@ -41,7 +41,8 @@ USE NWPSAFMod_Params, ONLY : &
      Cloud_Min_Pressure, &
      Legacy_Setting,     &
     !PM
-     retrieval_in_log
+     retrieval_in_log,   &
+     MwClwRetrieval
      !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
@@ -221,6 +222,10 @@ RT_opts(:) % rt_mw % fastem_version       = 6
 
 IF (Read_CLW_Background) THEN
   RT_opts(:) % rt_mw % clw_data         = .true.
+  !PM
+ELSEIF (MwClwRetrieval) THEN
+  RT_opts(:) % rt_mw % clw_data         = .true.
+  !PM
 ELSE
   RT_opts(:) % rt_mw % clw_data         = .false.
 END IF

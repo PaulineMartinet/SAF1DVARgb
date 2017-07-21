@@ -52,7 +52,8 @@ USE NWPSAFMod_Params, ONLY : &
      CalcRadiance,       &
      Gas_Units, &
      !PM
-     retrieval_in_log
+     retrieval_in_log,   &
+     MwClwRetrieval
      !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
@@ -275,6 +276,13 @@ ELSE RTTOV_FastmodelMode
   ! 1.3) Fill in the atmospheric profile variables
   !----
 
+   !PM Case where we retrieve LWP values but start from a clear background
+   IF( ALL(RT_opts(:) % rt_mw % clw_data .eqv. .FALSE.) .and. MwClwRetrieval ) THEN
+        Allocate( Profiles(1) % clw(Num_RTLevels) )
+   END IF
+    
+    !PM
+  
   profiles(1)%p(:) = RT_Params%Pressure_Pa(:)/100.0
   profiles(1)%t(:) = RTProf(Prof_FirstT : Prof_LastT)
   !PM
@@ -289,8 +297,12 @@ ELSE RTTOV_FastmodelMode
   END IF
   IF( ANY(RT_opts(:) % rt_mw % clw_data) ) THEN
     profiles(1)%clw(:) = RTProf(Prof_FirstCLW : Prof_LastCLW)
+    !PM
+  ELSE
+     profiles(1)%clw(:) = 0
+    !PM
   END IF
-
+  
   ! 1.4)  Fill in the Surface Variables
   !----
 
@@ -412,8 +424,7 @@ ELSE RTTOV_FastmodelMode
       Surf_Emiss,     & !inout
       Surf_Emiss_K,   & !inout
       CalcEmiss       ) !inout
-
-
+      
     ! 2.2) Initialise emissivity arrays
     !---
 
@@ -501,7 +512,7 @@ ELSE RTTOV_FastmodelMode
     !----
     CASE( FastmodelMode_Forward ) ForwardOrGradient
 
-      ! CALL rttov_print_profile(profiles(1), lu=6)
+       !CALL rttov_print_profile(profiles(1), lu=6)
       !CALL rttov_print_opts(RT_opts(Instrument), lu=6)
       !CALL rttov_print_info(RT_Coefs(Instrument), lu=6)
 
@@ -554,7 +565,7 @@ ELSE RTTOV_FastmodelMode
 
 
 !      CALL rttov_print_profile(profiles(1), lu=6)
-!      CALL rttov_print_opts(RT_opts(Instrument), lu=6)
+      CALL rttov_print_opts(RT_opts(Instrument), lu=6)
 
       IF ( UsePCs ) THEN
         ! Initialise pccomp_k%pcscores to 1
@@ -613,8 +624,7 @@ ELSE RTTOV_FastmodelMode
           Message,                & ! in
           ErrorStatus=StatusFatal ) ! in 
       END IF
-
-
+      
       !----
       CALL NWPSAF_RTTOV11_GetHMatrix (  &
         Profiles,        & !in

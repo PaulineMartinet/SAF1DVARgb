@@ -43,7 +43,8 @@ Subroutine NWPSAF_RTTOV11_Allocate ( &
 ! End of header -------------------------------------------------------
 
 USE NWPSAFMod_Params, ONLY : &
-  StatusFatal
+  StatusFatal,               &
+  MwClwRetrieval
 
 USE NWPSAFMod_RTmodel, ONLY : &
   FastmodelMode_Gradient,  &
@@ -99,6 +100,7 @@ CHARACTER(LEN=80) :: ErrorMessage(2)  ! Message for NWPSAF_Report
 
 INTEGER, PARAMETER :: ASW_ALLOCATE = 1
 INTEGER, PARAMETER :: ASW_DEALLOCATE = 0
+INTEGER :: I
 !---------------------------------------------------------------
 
 ErrorCode = 0
@@ -256,6 +258,15 @@ IF ( FastModel_Mode == FastModelMode_Gradient ) THEN
     ASW,           &
     RT_coefs(Instrument), &
     init=.true.    )
+    
+!PM Case where we retrieve LWP values but start from a clear background
+   IF( ALL(RT_opts(:) % rt_mw % clw_data .eqv. .FALSE.) .and. MwClwRetrieval ) THEN
+      Do I=1,NumInstChans
+         Allocate( Profiles_K(I) % clw(Num_RTLevels) )
+         Profiles_K(I) % clw(:) = 0.
+      END DO
+    END IF    
+!PM    
 
   IF (ErrorCode /= 0) THEN
     ErrorMessage(1)='Error in RTTOV_ALLOC_PROF'
