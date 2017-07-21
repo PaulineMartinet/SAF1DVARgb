@@ -124,7 +124,10 @@ END FUNCTION LWP_to_Layers
 
 
 
-FUNCTION Layers_to_LWP(Pressure,CLW)
+!FUNCTION Layers_to_LWP(Pressure,CLW)
+!PM
+FUNCTION Layers_to_LWP(CLW,Pressure)
+!PM
 
   USE rttov_const, ONLY : &
     gravity
@@ -147,7 +150,6 @@ FUNCTION Layers_to_LWP(Pressure,CLW)
   ENDDO
   
   Layers_to_LWP=(0.5*Layers_to_LWP)/gravity
-
 END FUNCTION Layers_to_LWP
 
 

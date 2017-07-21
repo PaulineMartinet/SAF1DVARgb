@@ -325,6 +325,7 @@ IF (MwClwRetrieval .AND. Retrieve_qtotal) THEN
    ENDIF
 END IF
 
+
 IF (MwClwRetrieval .AND. Retrieve_LWP ) THEN
   LWP_back = &
     Layers_to_LWP(RT_Params % RTguess(Prof_FirstCLW:Prof_LastCLW), &
@@ -336,9 +337,9 @@ IF (MwClwRetrieval .AND. Retrieve_LWP ) THEN
   ELSE
        LWP_FirstGuess = 0.1! RT_Params % RTguess(Prof_ClW) !=0.1 ! kg/m**2
   ENDIF
-  LWP_FirstGuess = 0.1! ! kg/m**2
+ ! LWP_FirstGuess = 0.1! ! kg/m**2
   !PM
-  RT_Params % RTguess(Prof_LWP) = LWP_FirstGuess
+    RT_Params % RTguess(Prof_LWP) = LWP_FirstGuess
   RT_Params % RT1stguess(Prof_LWP) = LWP_FirstGuess
   !Spread LWP to layers
   CALL NWPSAF_CloudStructure(RT_params,cloud_structure)
