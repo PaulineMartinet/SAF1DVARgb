@@ -39,7 +39,10 @@ USE NWPSAFMod_Params, ONLY : &
      ipcreg,             &
      Ozone_Present,      &
      Cloud_Min_Pressure, &
-     Legacy_Setting
+     Legacy_Setting,     &
+    !PM
+     retrieval_in_log
+     !PM
 
 USE NWPSAFMod_RTmodel, ONLY : &
      RTParams_Type,      &
@@ -381,9 +384,14 @@ ELSE
   Soft_Limits % Minimum(Prof_FirstT:Prof_LastT) = &
     RT_coefs(1) % coef % lim_prfl_tmin(:)-0.5
   ! Minimum water vapour
+  IF (retrieval_in_log) THEN
   Soft_Limits % Minimum(Prof_FirstQ:Prof_LastQ) = &
     LOG(RT_coefs(1) % coef % lim_prfl_gmin(:,wv_pos)/ &
     q_mixratio_to_ppmv)-0.5
+  ELSE
+  Soft_Limits % Minimum(Prof_FirstQ:Prof_LastQ) = RT_coefs(1) % coef % lim_prfl_gmin(:,wv_pos)/ &
+    q_mixratio_to_ppmv 
+  ENDIF
   ! Minimum ozone (if present)
   IF(RT_opts(1) % rt_ir % ozone_data) THEN
     Soft_Limits % Minimum(Prof_FirstO3:Prof_LastO3) = &
@@ -394,9 +402,19 @@ ELSE
   ! Minimum surface variables
   Soft_Limits % Minimum(Prof_T2) = &
     RT_coefs(1) % coef % lim_prfl_tmin(Num_RTLevels)-0.5
+    !PM
+    IF (retrieval_in_log) THEN
   Soft_Limits % Minimum(Prof_Q2) = &
     LOG(RT_coefs(1) % coef % lim_prfl_gmin(Num_RTLevels,wv_pos)/ &
     q_mixratio_to_ppmv)-0.5
+    ELSE
+   Soft_Limits % Minimum(Prof_Q2) = &
+    RT_coefs(1) % coef % lim_prfl_gmin(Num_RTLevels,wv_pos)/ &
+    q_mixratio_to_ppmv   
+    ENDIF
+    
+    
+    !PM
   Soft_Limits % Minimum(Prof_PStar) = 300.
   Soft_Limits % Minimum(Prof_UWind) = -100.
   Soft_Limits % Minimum(Prof_VWind) = -100.
@@ -412,9 +430,15 @@ ELSE
   Soft_Limits % Maximum(Prof_FirstT:Prof_LastT) = &
     RT_coefs(1) % coef % lim_prfl_tmax(:)+0.5
   ! Maximum water vapour
+  IF (retrieval_in_log) THEN
   Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ) = &
     LOG(RT_coefs(1) % coef % lim_prfl_gmax(:,wv_pos)/ &
     q_mixratio_to_ppmv)+0.5
+  ELSE
+  Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ) = &
+    RT_coefs(1) % coef % lim_prfl_gmax(:,wv_pos)/ &
+    q_mixratio_to_ppmv
+  ENDIF
   ! Maximum ozone (if present)
   IF (RT_opts(1) % rt_ir % ozone_data) Then
     Soft_Limits % Maximum(Prof_FirstO3:Prof_LastO3) = &
@@ -425,9 +449,15 @@ ELSE
   ! Maximum surface variables
   Soft_Limits % Maximum(Prof_T2) = &
     RT_coefs(1) % coef % lim_prfl_tmax(Num_RTLevels)+0.5
+ IF (retrieval_in_log) THEN
   Soft_Limits % Maximum(Prof_Q2) = &
     LOG(RT_coefs(1) % coef % lim_prfl_gmax(Num_RTLevels,wv_pos)/ &
     q_mixratio_to_ppmv)+0.5
+ ELSE
+   Soft_Limits % Maximum(Prof_Q2) = &
+    RT_coefs(1) % coef % lim_prfl_gmax(Num_RTLevels,wv_pos)/ &
+    q_mixratio_to_ppmv
+ ENDIF
   ! (This is the RTTOV hard limit:)
   Soft_Limits % Maximum(Prof_PStar) = 1200.
   Soft_Limits % Maximum(Prof_UWind) = 100.
@@ -438,14 +468,25 @@ ELSE
   Soft_Limits % Maximum(Prof_CloudCover) = 1.0
 
   ! These are the RTTOV hard limits:
+  !PM
+  IF (retrieval_in_log) THEN
   Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ) = &
     MIN(Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ),-2.99578)
-
+  ELSE
+  Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ) = &
+    MIN(Soft_Limits % Maximum(Prof_FirstQ:Prof_LastQ),exp(-2.99578)/q_mixratio_to_ppmv)
+  ENDIF
+!PM
   Soft_Limits % Maximum(Prof_FirstO3:Prof_LastO3) = &
     MIN(Soft_Limits % Maximum(Prof_FirstO3:Prof_LastO3),20.)
 
+    IF (retrieval_in_log) THEN
   Soft_Limits % Maximum(Prof_Q2) = &
     MIN(Soft_Limits % Maximum(Prof_Q2),-2.99578)
+    ELSE
+   Soft_Limits % Maximum(Prof_Q2) = &
+    MIN(Soft_Limits % Maximum(Prof_Q2),exp(-2.99578)/q_mixratio_to_ppmv)  
+    ENDIF
 
   !3.3) Check for profile mismatches
   !----
