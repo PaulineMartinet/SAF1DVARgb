@@ -161,7 +161,7 @@ END DO
 !Check cloud liquid water profile within limits, else fail
 DO level = 1,Num_RTlevels
    IF ( Guess_Prof(Prof_FirstCLW+level-1) < 0      ) THEN
-      !Out_of_range = .TRUE.
+      Out_of_range = .TRUE.
       Guess_Prof(Prof_FirstCLW+level-1) = 1e-8
       IF ( GeneralMode >= VerboseMode ) THEN
          WRITE(*,*) 'INVALID DATA: CLW outside limits at level ',level,Guess_Prof(Prof_FirstCLW+level-1)
