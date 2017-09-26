@@ -272,12 +272,12 @@ Humidities: IF ( Valid_Data ) THEN
           
    !3.2) Convert humidity from given units to Ln(q) 
    !----
-
+   
    CALL NWPSAF_QSAT( &
         qsaturated(1:Num_RTLevels),                 &
         RT_Params % RTBack(Prof_FirstT:Prof_LastT), &
         Background % P (Obnumber,1:Num_RTlevels),   &
-        Num_RTLevels)
+        Num_RTLevels)        
 
    ! Convert QSAT (kg/kg) to input units
    IF (Humidity_Units == Humidity_PPMV) &

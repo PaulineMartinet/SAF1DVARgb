@@ -367,7 +367,7 @@ END SELECT
 IF (MwClwRetrieval .AND. Retrieve_LWP) THEN
    ! N.B. 1st guess CTP and Cloud fraction reported, not background.
    WRITE(FileUnit_Retrieved_Profiles, &
-        FMT='(''LWP    (kg/m2):              '', 2F10.3)') &
+        FMT='(''LWP    (kg/m2):              '', 2E12.4)') &
         Obs% LWP % Value, &
         RT_Params % RT1stguess(Prof_LWP)
    !WRITE(FileUnit_Retrieved_Profiles,FMT=*) 

@@ -235,7 +235,7 @@ LOGICAL :: Converged
 LOGICAL :: Out_of_range      
 LOGICAL :: Profile_Variables_Reset
 
-INTEGER :: WhichProf
+INTEGER :: WhichProf, level
 
 CHARACTER(LEN=*), PARAMETER :: RoutineName = "NWPSAF_Minimize"
 CHARACTER(LEN=80)  :: ErrorMessage(2)
@@ -341,7 +341,7 @@ IF (MwClwRetrieval .AND. Retrieve_LWP ) THEN
   !PM
     RT_Params % RTguess(Prof_LWP) = LWP_FirstGuess
   RT_Params % RT1stguess(Prof_LWP) = LWP_FirstGuess
-  !Spread LWP to layers
+    !Spread LWP to layers
   CALL NWPSAF_CloudStructure(RT_params,cloud_structure)
   RT_Params%RTguess(Prof_FirstCLW:Prof_LastCLW) = &
     LWP_to_Layers( LWP_FirstGuess, cloud_structure )
@@ -607,9 +607,9 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
   END IF
 
   IF (Out_of_Range) THEN
-      IF ( GeneralMode >= DebugMode ) WRITE(*,*) &
-            'Iteration out of range - exiting minimisation'
-      EXIT Iteration_Loop
+   !   IF ( GeneralMode >= DebugMode ) WRITE(*,*) &
+   !         'Iteration out of range - exiting minimisation'
+   !   EXIT Iteration_Loop
   END IF
 
   IF(MwClwRetrieval .AND. Retrieve_LWP) THEN
@@ -619,6 +619,7 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
       LWP_to_Layers( RT_Params % RTguess(Prof_LWP), cloud_structure )
   END IF
   
+
 !PM New check to avoid negative liquid water content values
   CALL NWPSAF_CheckIteration( &
       RT_Params % RTGuess,      & ! inout

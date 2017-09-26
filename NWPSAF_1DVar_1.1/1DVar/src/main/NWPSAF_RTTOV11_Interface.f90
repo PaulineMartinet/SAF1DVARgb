@@ -565,7 +565,7 @@ ELSE RTTOV_FastmodelMode
 
 
 !      CALL rttov_print_profile(profiles(1), lu=6)
-      CALL rttov_print_opts(RT_opts(Instrument), lu=6)
+ !     CALL rttov_print_opts(RT_opts(Instrument), lu=6)
 
       IF ( UsePCs ) THEN
         ! Initialise pccomp_k%pcscores to 1

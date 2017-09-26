@@ -72,7 +72,8 @@ USE NWPSAFMod_RTmodel, ONLY : &
     UseModelLevels, &
     !PM
     Prof_FirstQ, &
-    Prof_FirstCLW
+    Prof_FirstCLW, &
+    Prof_LWP
     !PM
 
 USE NWPSAFMod_Params, ONLY : &
@@ -147,9 +148,10 @@ END IF
 DO level = 1,Num_RTlevels
    IF ( (Guess_Prof(Prof_FirstQ+level-1) < Min_Q) ) THEN
       Out_of_range = .TRUE.
+      WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level,Guess_Prof(Prof_FirstQ+level-1) 
       Guess_Prof(Prof_FirstQ+level-1)= Min_Q
       IF ( GeneralMode >= VerboseMode ) THEN
-         WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level
+         WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level 
       ELSE
          EXIT
       END IF
@@ -162,7 +164,7 @@ END DO
 DO level = 1,Num_RTlevels
    IF ( Guess_Prof(Prof_FirstCLW+level-1) < 0      ) THEN
       Out_of_range = .TRUE.
-      Guess_Prof(Prof_FirstCLW+level-1) = 1e-8
+      Guess_Prof(Prof_FirstCLW+level-1) = 0
       IF ( GeneralMode >= VerboseMode ) THEN
          WRITE(*,*) 'INVALID DATA: CLW outside limits at level ',level,Guess_Prof(Prof_FirstCLW+level-1)
       ELSE
@@ -172,7 +174,11 @@ DO level = 1,Num_RTlevels
 END DO
 !PM
 
-
+!PM
+IF ( Guess_Prof(Prof_LWP) < 0 ) THEN
+   Guess_Prof(Prof_LWP)=0 
+ENDIF
+!PM
 
 ! ----------------------------------------------------
 ! 3. Constrain profile to within range of validity for 
