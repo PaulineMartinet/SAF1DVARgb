@@ -163,7 +163,10 @@ USE NWPSAFMod_RTmodel, ONLY : &
      Prof_LastCLW,            &
      Prof_LastT,              &
      Prof_LastQ,              &
-     Num_WetLevels
+     Num_WetLevels, &
+     !PM
+     Prof_FirstQ
+     !PM
 
 Use NWPSAFMod_LiquidWater, Only : &
     Layers_to_LWP,        &
@@ -567,6 +570,10 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
   
   Guess(:) = Back(:) + Delta_Profile(:)
   RT_Params % RTGuess(Retrieved_Elements) = Guess(:)
+  
+  DO level=61,120
+    write(*,*) 'humidity increment', level, Delta_Profile(level)
+  END DO
 
   ! The first call of RTTOV uses the guess profile rather than the background profile.
   ! If the two are different, the first returned BTs will NOT correspond to the background!
@@ -709,8 +716,12 @@ Iteration_Loop: DO Iterate = 1, MaxIterations
       .AND. Gamma/Old_Gamma < 1.01      &
       .AND. ( Minimisation_Method /= Marquardt_Levenberg .OR. & 
       ABS(Obs % Jcost_Gradient) < SmallJCost_Gradient * JCost**2) ) THEN
-    IF (Profile_Variables_Reset) THEN
+      !PM
+    IF (Profile_Variables_Reset .OR. ANY(RT_Params % RTGuess(Prof_FirstQ:Prof_FirstQ+Num_RTlevels-1)<=1e-8)) THEN
+ !   IF (Profile_Variables_Reset) THEN
         JCost=-JCost
+        Converged = .FALSE.
+        !PM
     ELSE
         Converged = .TRUE.
         IF (GeneralMode >= VerboseMode) THEN

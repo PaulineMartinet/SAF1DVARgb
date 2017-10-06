@@ -150,6 +150,7 @@ DO level = 1,Num_RTlevels
       Out_of_range = .TRUE.
       WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level,Guess_Prof(Prof_FirstQ+level-1) 
       Guess_Prof(Prof_FirstQ+level-1)= Min_Q
+     ! Profile_Variables_Reset = .TRUE.
       IF ( GeneralMode >= VerboseMode ) THEN
          WRITE(*,*) 'INVALID DATA: Humidity outside limits at level ',level 
       ELSE
